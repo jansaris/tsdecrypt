@@ -65,6 +65,17 @@ static inline void				ffdecsa_set_odd_cw(ffdecsa_key_t *keys, const uint8_t *odd
 static inline int				ffdecsa_decrypt_packets(ffdecsa_key_t *keys, uint8_t **cluster) { (void)keys; (void)cluster; return 0; }
 #endif
 
+#if USE_LIBAESDEC
+#include <libaesdec/libaesdec.h>
+#define use_libaesdec 1
+#else
+
+
+#endif
+
+
+
+
 #include "data.h"
 
 struct csakey {

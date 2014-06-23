@@ -64,10 +64,14 @@ endif
 ifeq "$(DECRYPT_LIB)" "ffdecsa"
 DEFS += -DDLIB=\"FFdecsa_$(FFDECSA_MODE)\"
 DEFS += -DUSE_FFDECSA=1
-else
-DEFS += -DDLIB=\"libdvbcsa\"
-DEFS += -DUSE_LIBDVBCSA=1
-tsdecrypt_LIBS += -ldvbcsa
+else 
+	ifeq "$(DECRYPT_LIB)" "libaesdec"
+	DEFS += -DUSE_LIBAESDEC=1
+	else
+	DEFS += -DDLIB=\"libdvbcsa\"
+	DEFS += -DUSE_LIBDVBCSA=1
+	tsdecrypt_LIBS += -ldvbcsa
+	endif
 endif
 
 CLEAN_OBJS = $(FFDECSA_OBJ) tsdecrypt $(tsdecrypt_SRC:.c=.o) $(tsdecrypt_SRC:.c=.d)
@@ -154,7 +158,8 @@ Build targets:\n\
   tsdecrypt|all   - Build tsdecrypt with whatever decryption library was chosen\n\
 \n\
   dvbcsa          - Build tsdecrypt with libdvbcsa [default]\n\
-  ffdecsa         - Build tsdecrypt with shipped FFdecsa.\n\
+  ffdecsa         - Build tsdecrypt with shipped FFdecsa\n\
+  libaesdec       - Build tsdecrypt with libaesdec.\n\
 \n\
   install         - Install tsdecrypt in PREFIX ($(PREFIX))\n\
   uninstall       - Uninstall tsdecrypt from PREFIX\n\
