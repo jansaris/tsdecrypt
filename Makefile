@@ -61,18 +61,11 @@ ifeq "$(shell uname -s)" "Linux"
 tsdecrypt_LIBS += -lcrypt -lrt
 endif
 
-ifeq "$(DECRYPT_LIB)" "ffdecsa"
-DEFS += -DDLIB=\"FFdecsa_$(FFDECSA_MODE)\"
-DEFS += -DUSE_FFDECSA=1
-else 
-	ifeq "$(DECRYPT_LIB)" "libaesdec"
-	DEFS += -DUSE_LIBAESDEC=1
-	else
-	DEFS += -DDLIB=\"libdvbcsa\"
-	DEFS += -DUSE_LIBDVBCSA=1
-	tsdecrypt_LIBS += -ldvbcsa
-	endif
-endif
+DEFS += -DUSE_LIBDVBCSA=0
+DEFS += -DUSE_FFDECSA=0
+DEFS += -DUSE_LIBAESDEC=1
+DEFS += -DDLIB=\"libaesdec\"
+	
 
 CLEAN_OBJS = $(FFDECSA_OBJ) tsdecrypt $(tsdecrypt_SRC:.c=.o) $(tsdecrypt_SRC:.c=.d)
 
@@ -81,6 +74,11 @@ PROGS = tsdecrypt
 .PHONY: ffdecsa dvbcsa help distclean clean install uninstall libaesdec
 
 all: $(PROGS)
+
+libaesdec: clean
+	$(Q)echo "Switching build to libaesdec."
+	@-if test -f FFdecsa.opts; then $(MV) FFdecsa.opts FFdecsa.opts.saved; fi	
+	$(Q)$(MAKE) -s tsdecrypt
 
 ffdecsa: clean
 	$(Q)echo "Switching build to FFdecsa."

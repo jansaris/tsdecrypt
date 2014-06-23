@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include "openssl/aes.h"
 
+#include "libaesdec.h"
+
 #ifndef NULL
 #define NULL 0
 #endif
