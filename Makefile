@@ -16,7 +16,7 @@ ifndef V
 Q = @
 endif
 
-CFLAGS ?= -O2 -ggdb \
+CFLAGS ?= -ggdb \
  -W -Wall -Wextra \
  -Wshadow -Wformat-security -Wstrict-prototypes
 
@@ -74,7 +74,7 @@ CLEAN_OBJS = $(FFDECSA_OBJ) tsdecrypt $(tsdecrypt_SRC:.c=.o) $(tsdecrypt_SRC:.c=
 
 PROGS = tsdecrypt
 
-.PHONY: ffdecsa dvbcsa help distclean clean install uninstall
+.PHONY: ffdecsa dvbcsa help distclean clean install uninstall libaesdec
 
 all: $(PROGS)
 
