@@ -24,7 +24,7 @@
 #include "csa.h"
 
 #ifndef DLIB
-	#define DLIB
+#define DLIB
 #endif
 
 csakey_t *csa_key_alloc(void) {
@@ -61,31 +61,41 @@ inline unsigned int csa_get_batch_size(void) {
 
 inline void csa_set_even_cw(csakey_t *csakey, uint8_t *even_cw) {
 	struct csakey *key = (struct csakey *) csakey;
-	dvbcsa_key_set(even_cw, key->s_csakey[0]);
-	dvbcsa_bs_key_set(even_cw, key->bs_csakey[0]);
+/*	dvbcsa_key_set(even_cw, key->s_csakey[0]);
+	dvbcsa_bs_key_set(even_cw, key->bs_csakey[0]);*/
 	ffdecsa_set_even_cw(key->ff_csakey, even_cw);
+	aes_set_even_control_word(key->libaeskey, even_cw);
 }
 
 inline void csa_set_odd_cw(csakey_t *csakey, uint8_t *odd_cw) {
 	struct csakey *key = (struct csakey *) csakey;
-	dvbcsa_key_set(odd_cw, key->s_csakey[1]);
+/*	dvbcsa_key_set(odd_cw, key->s_csakey[1]);
 	dvbcsa_bs_key_set(odd_cw, key->bs_csakey[1]);
-	ffdecsa_set_odd_cw(key->ff_csakey, odd_cw);
+	ffdecsa_set_odd_cw(key->ff_csakey, odd_cw);*/
+	aes_set_odd_control_word(key->libaeskey, odd_cw);
 }
 
 inline void csa_decrypt_single_packet(csakey_t *csakey, uint8_t *ts_packet) {
 	struct csakey *key = (struct csakey *) csakey;
-	if (use_dvbcsa) {
-		unsigned int key_idx = ts_packet_get_scrambled(ts_packet) - 2;
-		unsigned int payload_offset = ts_packet_get_payload_offset(ts_packet);
-		ts_packet_set_not_scrambled(ts_packet);
-		dvbcsa_decrypt(key->s_csakey[key_idx], ts_packet + payload_offset,
-				188 - payload_offset);
-	}
-	if (use_ffdecsa) {
-		uint8_t *cluster[3] = { ts_packet, ts_packet + 188, NULL };
-		ffdecsa_decrypt_packets(key->ff_csakey, cluster);
-	}
+	/*if (use_dvbcsa) {
+	 unsigned int key_idx = ts_packet_get_scrambled(ts_packet) - 2;
+	 unsigned int payload_offset = ts_packet_get_payload_offset(ts_packet);
+	 ts_packet_set_not_scrambled(ts_packet);
+	 dvbcsa_decrypt(key->s_csakey[key_idx], ts_packet + payload_offset,
+	 188 - payload_offset);
+	 }
+	 if (use_ffdecsa) {
+	 uint8_t *cluster[3] = { ts_packet, ts_packet + 188, NULL };
+	 ffdecsa_decrypt_packets(key->ff_csakey, cluster);
+	 }*/
+
+
+
+	//unsigned int key_idx = ts_packet_get_scrambled(ts_packet) - 2;
+	//unsigned int payload_offset = ts_packet_get_payload_offset(ts_packet);
+	//ts_packet_set_not_scrambled(ts_packet);
+
+	aes_decrypt_packet(csakey, ts_packet);
 }
 
 inline void csa_decrypt_multiple_even(csakey_t *csakey, struct csa_batch *batch) {

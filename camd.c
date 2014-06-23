@@ -108,8 +108,8 @@ void camd_set_cw(struct ts *ts, uint8_t *new_cw, int check_validity) {
 	if (!check_validity || memcmp(new_cw, invalid_cw, 16) != 0)
 		csa_set_even_cw(c->key->csakey, new_cw);
 
-/*	if (!check_validity || memcmp(new_cw + 8, invalid_cw, 8) != 0)
-		csa_set_odd_cw(c->key->csakey, new_cw + 8);*/
+	if (!check_validity || memcmp(new_cw + 16, invalid_cw, 16) != 0)
+		csa_set_odd_cw(c->key->csakey, new_cw + 16);
 }
 
 static int camd_recv_cw(struct ts *ts) {
@@ -134,16 +134,16 @@ static int camd_recv_cw(struct ts *ts) {
 		c->ecm_recv_errors++;
 		if (c->ecm_recv_errors >= ECM_RECV_ERRORS_LIMIT) {
 			c->key->is_valid_cw = 0;
-			memset(c->key->cw, 0, 16); // Invalid CW
+			memset(c->key->cw, 0, 32); // Invalid CW
 		}
 		usleep(10000);
 		return 0;
 	}
 
-	char cw_dump[16 * 6];
-	ts_hex_dump_buf(cw_dump, 16 * 6, c->key->cw, 16, 0);
+	char cw_dump[32 * 6];
+	ts_hex_dump_buf(cw_dump, 32 * 6, c->key->cw, 32, 0);
 
-	int valid_cw = memcmp(c->key->cw, invalid_cw, 16) != 0;
+	int valid_cw = memcmp(c->key->cw, invalid_cw, 32) != 0;
 	if (!c->key->is_valid_cw && valid_cw) {
 		ts_LOGf("CW  | OK: Valid code word was received.\n");
 		notify(ts, "CODE_WORD_OK", "Valid code word was received.");

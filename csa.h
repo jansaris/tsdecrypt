@@ -21,10 +21,7 @@ struct csa_batch {
 	unsigned int	len;	// Payload bytes lenght
 };
 
-#if USE_LIBDVBCSA
-#include <dvbcsa/dvbcsa.h>
-#define use_dvbcsa 1
-#else
+
 #define use_dvbcsa 0
 #define dvbcsa_key_t void
 #define dvbcsa_bs_key_t void
@@ -38,22 +35,10 @@ static inline dvbcsa_bs_key_t *	dvbcsa_bs_key_alloc(void) { return NULL; }
 static inline void				dvbcsa_bs_key_free(dvbcsa_bs_key_t *key) { (void)key; }
 static inline void				dvbcsa_bs_key_set(uint8_t *cw, dvbcsa_bs_key_t *key) { (void)cw; (void)key; }
 static inline void				dvbcsa_bs_decrypt(const dvbcsa_bs_key_t *key, const struct dvbcsa_bs_batch_s *pcks, unsigned int maxlen) { (void)key; (void)pcks; (void)maxlen; }
-#endif
 
 #define ffdecsa_key_t void
 
-#if USE_FFDECSA
-#include "FFdecsa/FFdecsa.h"
-#define use_ffdecsa 1
-static inline int				ffdecsa_get_internal_parallelism(void) { return get_internal_parallelism(); }
-static inline int				ffdecsa_get_suggested_cluster_size(void) { return get_suggested_cluster_size(); }
-static inline ffdecsa_key_t *	ffdecsa_key_alloc(void) { return get_key_struct(); }
-static inline void				ffdecsa_key_free(ffdecsa_key_t *keys) { free_key_struct(keys); }
-static inline void				ffdecsa_set_cw(ffdecsa_key_t *keys, const uint8_t *even, const uint8_t *odd) { set_control_words(keys, even, odd); }
-static inline void				ffdecsa_set_even_cw(void *keys, const uint8_t *even) { set_even_control_word(keys, even); }
-static inline void				ffdecsa_set_odd_cw(ffdecsa_key_t *keys, const uint8_t *odd) { return set_odd_control_word(keys, odd); }
-static inline int				ffdecsa_decrypt_packets(ffdecsa_key_t *keys, uint8_t **cluster) { return decrypt_packets(keys, cluster); }
-#else
+
 #define use_ffdecsa 0
 static inline int				ffdecsa_get_internal_parallelism(void) { return 0; }
 static inline int				ffdecsa_get_suggested_cluster_size(void) { return 0; }
@@ -63,20 +48,12 @@ static inline void				ffdecsa_set_cw(ffdecsa_key_t *keys, const uint8_t *even, c
 static inline void				ffdecsa_set_even_cw(void *keys, const uint8_t *even) { (void)keys; (void)even; }
 static inline void				ffdecsa_set_odd_cw(ffdecsa_key_t *keys, const uint8_t *odd) { (void)keys; (void)odd; }
 static inline int				ffdecsa_decrypt_packets(ffdecsa_key_t *keys, uint8_t **cluster) { (void)keys; (void)cluster; return 0; }
-#endif
 
 #define libaes_key_t void
 
-#if USE_LIBAESDEC
 #include "libaesdec/libaesdec.h"
 #define use_libaesdec 1
-static inline libaes_key_t *	libaes_key_alloc(void) { return get_key_struct(); }
-#else
-
-
-
-
-#endif
+static inline libaes_key_t *	libaes_key_alloc(void) { return aes_get_key_struct(); }
 
 #include "data.h"
 

@@ -52,8 +52,6 @@ tsdecrypt_SRC = data.c \
  tsdecrypt.c
 tsdecrypt_LIBS = -lcrypto -lpthread
 
-# If the file do not exist, libdvbcsa will be used
--include FFdecsa.opts
 
 tsdecrypt_OBJS = $(FFDECSA_OBJ) $(FUNCS_LIB) $(TS_LIB) $(tsdecrypt_SRC:.c=.o)
 
@@ -115,6 +113,11 @@ tsdecrypt: $(tsdecrypt_OBJS)
 FFdecsa/FFdecsa.o:
 	$(Q)echo "  MAKE	FFdecsa"
 	$(Q)$(MAKE) -s -C FFdecsa FLAGS=$(FFDECSA_FLAGS) PARALLEL_MODE=$(FFDECSA_MODE) COMPILER=$(CROSS)$(CC) FFdecsa.o
+
+libaesdec/libaesdec.o:
+	$(Q)echo "  MAKE	libaesdec"
+	$(Q)$(MAKE) -s -C libaesdec COMPILER=$(CROSS)$(CC) FFdecsa.o
+
 
 -include $(tsdecrypt_SRC:.c=.d)
 
