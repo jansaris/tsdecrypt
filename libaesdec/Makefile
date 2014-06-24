@@ -1,5 +1,5 @@
 ##### compiling with g++ gives a little more speed
-COMPILER=gcc
+#COMPILER=gcc
 #COMPILER=g++
 
 
@@ -11,9 +11,9 @@ COMPILER=gcc
 #FLAGS += -pg
 
 COMPILER ?= g++
-FLAGS    ?= -Wall -fPIC -fomit-frame-pointer -fexpensive-optimizations -funroll-loops
+FLAGS    ?= -Wall -fPIC -fomit-frame-pointer -fexpensive-optimizations -funroll-loops -O3
 
-H_FILES = libaesdec.h 
+H_FILES = libaesdec.h
 
 all: libaesdec.o
 

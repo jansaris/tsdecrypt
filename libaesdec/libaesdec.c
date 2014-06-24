@@ -26,24 +26,20 @@
 #define DBG(a)
 #endif
 
-struct aes_key_t {
-	AES_KEY aesk;
-	unsigned char iA[10];  // TimeStamp
-};
+/*struct aes_key_t {
+ AES_KEY aesk;
+ unsigned char iA[10];  // TimeStamp
+ };*/
 
 struct aes_keys_t {
 	AES_KEY even; // table 0x80
 	AES_KEY odd; // table 0x81
 };
 
-
 /*static void aes_schedule_key(struct aes_key_t *key, const unsigned char *pk) {
 
+ }*/
 
-
-
-
-}*/
 
 void aes_set_even_control_word(void *keys, const unsigned char *pk) {
 	AES_set_decrypt_key(pk, 128, &((struct aes_keys_t *) keys)->even);
@@ -65,8 +61,6 @@ void aes_set_control_words(void *keys, const unsigned char *ev,
 	//aes_schedule_key(&((struct aes_keys_t *) keys)->odd, od);
 }
 
-
-
 //-----key structure
 
 void *aes_get_key_struct(void) {
@@ -87,22 +81,23 @@ void free_key_struct(void *keys) {
 //----- decrypt
 
 int aes_decrypt_packet(void *keys, unsigned char *packet) {
-	int stat_no_scramble;
-	int stat_reserved;
-	int group_ev_od = 0;
+	int stat_no_scramble = 0;
+	int stat_reserved = 0;
+	//int group_ev_od = 0;
 	int advanced = 0;
-	int can_advance;
-
+	int can_advance = 0;
+int ev_od;
 	unsigned char *pkt;
-	int xc0, ev_od, len, offset, n;
+	int xc0, len, offset, n;
 
-	AES_KEY k;
 	pkt = packet;
+	AES_KEY k;
+
 
 	// TODO check all flags
 
 	do { // handle this packet
-		xc0 = pkt[3] & 0xc0;         // encrypted
+		xc0 = pkt[3] & 0xc0;
 		DBG(fprintf(stderr,"   exam pkt=%p, xc0=%02x, can_adv=%i\n",pkt,xc0,can_advance));
 		if (xc0 == 0x00) {
 			DBG(fprintf(stderr,"skip clear pkt %p (can_advance is %i)\n",pkt,can_advance));
@@ -116,8 +111,8 @@ int aes_decrypt_packet(void *keys, unsigned char *packet) {
 			stat_reserved++;
 			return advanced;
 		}
-		if (xc0 == 0x80 || xc0 == 0xc0) { // encrypted     TODO Find our encryption flag
-			ev_od = (xc0 & 0x40) >> 6; // 0 even, 1 odd   TODO Find our key flag
+		if (xc0 == 0x80 || xc0 == 0xc0) { // encrypted
+		ev_od = (xc0 & 0x40) >> 6; // 0 even, 1 odd   TODO Find our key flag
 
 			pkt[3] &= 0x3f;  // consider it decrypted now
 			if (pkt[3] & 0x20) { // incomplete packet
@@ -130,11 +125,11 @@ int aes_decrypt_packet(void *keys, unsigned char *packet) {
 					advanced += can_advance;
 					return advanced;  // this doesn't need more processing
 				}
-
+				//return 0;
 			} else {
 				can_advance = 0;
 				DBG(fprintf(stderr,"skip pkt %p and can_advance set to 0\n",pkt));
-				return advanced; // skip and go on
+				//return advanced; // skip and go on
 			}
 		}
 	} while (0);
@@ -154,20 +149,16 @@ int aes_decrypt_packet(void *keys, unsigned char *packet) {
 #endif
 
 	// choose key
-	if (group_ev_od == 0) {
+	if (ev_od) {
 		k = ((struct aes_keys_t *) keys)->even;
 	} else {
 		k = ((struct aes_keys_t *) keys)->odd;
 	}
 
-	len = sizeof(pkt);
 
-	if (remainder(len, 16) != 0) {
-		DBG(fprintf(stderr,"pkt does not have correct length"));
-	}
-
+//AES_cbc_encrypt(pkt + 12, pkt + 12, 172, &k, iv,AES_DECRYPT);
 	int i;
-	for (i = 0; i < len; i += 16) {
+	for (i = 4; i <= 172; i += 16) {
 		AES_ecb_encrypt(pkt + i, pkt + i, &k, AES_DECRYPT);
 	}
 

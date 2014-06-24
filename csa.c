@@ -29,11 +29,12 @@
 
 csakey_t *csa_key_alloc(void) {
 	struct csakey *key = calloc(1, sizeof(struct csakey));
-	key->s_csakey[0] = dvbcsa_key_alloc();
+	/*key->s_csakey[0] = dvbcsa_key_alloc();
 	key->s_csakey[1] = dvbcsa_key_alloc();
 	key->bs_csakey[0] = dvbcsa_bs_key_alloc();
 	key->bs_csakey[1] = dvbcsa_bs_key_alloc();
-	key->ff_csakey = ffdecsa_key_alloc();
+	key->ff_csakey = ffdecsa_key_alloc();*/
+	key->libaeskey = aes_get_key_struct();
 	return (csakey_t *) key;
 }
 
@@ -56,14 +57,17 @@ inline unsigned int csa_get_batch_size(void) {
 	if (use_ffdecsa) {
 		return ffdecsa_get_suggested_cluster_size() / 2;
 	}
+	if (use_libaesdec) {
+		return 1;
+	}
 	return 0;
 }
 
 inline void csa_set_even_cw(csakey_t *csakey, uint8_t *even_cw) {
 	struct csakey *key = (struct csakey *) csakey;
 /*	dvbcsa_key_set(even_cw, key->s_csakey[0]);
-	dvbcsa_bs_key_set(even_cw, key->bs_csakey[0]);*/
-	ffdecsa_set_even_cw(key->ff_csakey, even_cw);
+	dvbcsa_bs_key_set(even_cw, key->bs_csakey[0]);
+	ffdecsa_set_even_cw(key->ff_csakey, even_cw);*/
 	aes_set_even_control_word(key->libaeskey, even_cw);
 }
 
@@ -72,6 +76,7 @@ inline void csa_set_odd_cw(csakey_t *csakey, uint8_t *odd_cw) {
 /*	dvbcsa_key_set(odd_cw, key->s_csakey[1]);
 	dvbcsa_bs_key_set(odd_cw, key->bs_csakey[1]);
 	ffdecsa_set_odd_cw(key->ff_csakey, odd_cw);*/
+
 	aes_set_odd_control_word(key->libaeskey, odd_cw);
 }
 
@@ -89,13 +94,11 @@ inline void csa_decrypt_single_packet(csakey_t *csakey, uint8_t *ts_packet) {
 	 ffdecsa_decrypt_packets(key->ff_csakey, cluster);
 	 }*/
 
-
-
 	//unsigned int key_idx = ts_packet_get_scrambled(ts_packet) - 2;
 	//unsigned int payload_offset = ts_packet_get_payload_offset(ts_packet);
 	//ts_packet_set_not_scrambled(ts_packet);
 
-	aes_decrypt_packet(csakey, ts_packet);
+	aes_decrypt_packet(key->libaeskey, ts_packet);
 }
 
 inline void csa_decrypt_multiple_even(csakey_t *csakey, struct csa_batch *batch) {

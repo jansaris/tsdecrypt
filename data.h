@@ -48,7 +48,7 @@ struct notify {
 	char		program[512];		/* What program to exec */
 };
 
-#define CODEWORD_LENGTH 16
+#define CODEWORD_LENGTH 32
 #define BISSKEY_LENGTH 6
 
 typedef void csakey_t;

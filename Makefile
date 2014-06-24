@@ -18,7 +18,7 @@ endif
 
 CFLAGS ?= -ggdb \
  -W -Wall -Wextra \
- -Wshadow -Wformat-security -Wstrict-prototypes
+ -Wshadow -Wformat-security -Wstrict-prototypes -O2
 
 DEFS = -DBUILD_ID=\"$(BUILD_ID)\" \
  -DVERSION=\"$(VERSION)\" -DGIT_VER=\"$(GIT_VER)\"
@@ -49,7 +49,8 @@ tsdecrypt_SRC = data.c \
  process.c \
  tables.c \
  notify.c \
- tsdecrypt.c
+ tsdecrypt.c \
+libaesdec/libaesdec.c
 tsdecrypt_LIBS = -lcrypto -lpthread
 
 
@@ -116,7 +117,7 @@ FFdecsa/FFdecsa.o:
 
 libaesdec/libaesdec.o:
 	$(Q)echo "  MAKE	libaesdec"
-	$(Q)$(MAKE) -s -C libaesdec COMPILER=$(CROSS)$(CC) FFdecsa.o
+	$(Q)$(MAKE) -s -C libaesdec COMPILER=$(CROSS)$(CC) libaesdec.o
 
 
 -include $(tsdecrypt_SRC:.c=.d)

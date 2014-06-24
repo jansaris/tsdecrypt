@@ -782,7 +782,7 @@ static void parse_options(struct ts *ts, int argc, char **argv) {
 				ts_LOGf("Out filter : Pass through TDT/TOT.\n");
 		}
 		ts_LOGf("TS discont : %s\n", ts->ts_discont ? "report" : "ignore");
-		ts->threaded = !(ts->input.type == FILE_IO && ts->input.fd != 0);
+		ts->threaded = 0;
 		ts_LOGf("Decoding   : %s\n", ts->threaded ? "threaded" : "single thread");
 	} else {
 		ts_LOGf("Decoding   : disabled\n");
