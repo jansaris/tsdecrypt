@@ -78,30 +78,43 @@ inline void csa_decrypt_multiple_ff(csakey_t *csakey, uint8_t **cluster) {
 
 void libaesdec_benchmark(void) {
 	struct timeval t0, t1;
-	unsigned int n = 0, npackets = 0;
-	uint8_t data[188];
-	
-	// Init keys
-	uint8_t ecw[16] = { 0x12, 0x34, 0x56, 0x78, 0x89, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x89, 0xab, 0xcd, 0xef };
+	void *key = aes_get_key_struct();;
+	unsigned int n, i, d, npackets = 0;
+	unsigned int batch_size = 1;
+	uint8_t data[batch_size + 1][188];
+	uint8_t *pcks[batch_size * 2 + 1];
+	uint8_t ecw[16] = { 0x12, 0x34, 0x56, 0x78, 0x89, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x89, 0xab, 0xcd, 0xef};
 	uint8_t ocw[16] = { 0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10, 0x12, 0x34, 0x56, 0x78, 0x89, 0xab, 0xcd, 0xef };
-	void *key = aes_get_key_struct();
+
 	aes_set_even_control_word(key, ecw);
 	aes_set_odd_control_word(key, ocw);
 
-		memset(data, rand(), 188);
-                data[0] = 0x47;
-                data[1] = 0x01;
-                data[2] = 0x02;
-                data[3] = 0x91;
-
-	
-	printf(" Decrypting %6u mpegts packets\r", n);
-	fflush(stdout);
+	printf("Batch size %d packets.\n\n", batch_size);
+	for (i = 0; i < batch_size; i++) {
+		memset(data[i], rand(), 188);
+		data[i][0] = 0x47;
+		data[i][1] = 0x01;
+		data[i][2] = 0x02;
+		data[i][3] = i & 0x0f;
+	}
 
 	gettimeofday(&t0, NULL);
-	for (n = 0; n < (1 << 20); n++) {
-		aes_decrypt_packet(key, data);
-		npackets ++;
+	for (n = (1 << 12) / batch_size; n < (1 << 18) / batch_size; n *= 2) {
+		static unsigned int key_idx = 0;
+		printf(" Decrypting %6u mpegts packets\r", n * batch_size);
+		fflush(stdout);
+		for (i = 0; i < n; i++) {
+			// aes_decrypt_packet function modifies data and pcks
+			for (d = 0; d < batch_size; d++) {
+				pcks[d * 2] = data[d];
+				pcks[d * 2 + 1] = data[d] + 188;
+				data[d][3] |= (key_idx == 0) ? (2 << 6) : (3 << 6);
+			}
+			pcks[d * 2] = NULL;
+			key_idx = !!key_idx;
+			aes_decrypt_packet(key, &pcks[0]);
+		}
+		npackets += n * batch_size;
 	}
 	gettimeofday(&t1, NULL);
 
