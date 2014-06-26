@@ -1,5 +1,0 @@
-# This file is included from Makefile
-DECRYPT_LIB = ffdecsa
-FFDECSA_OBJ = FFdecsa/FFdecsa.o
-FFDECSA_MODE = PARALLEL_128_SSE2
-FFDECSA_FLAGS = "-O3 -fexpensive-optimizations -funroll-loops -march=native -mmmx -msse -msse2"
