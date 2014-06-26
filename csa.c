@@ -101,6 +101,7 @@ void libaesdec_benchmark(void) {
 	gettimeofday(&t0, NULL);
 	for (n = 0; n < (1 << 20); n++) {
 		aes_decrypt_packet(key, data);
+		data[3] = 0x91;
 		npackets ++;
 	}
 	gettimeofday(&t1, NULL);
