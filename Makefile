@@ -18,7 +18,7 @@ endif
 
 CFLAGS ?= -ggdb \
  -W -Wall -Wextra \
- -Wshadow -Wformat-security -Wstrict-prototypes -O2
+ -Wshadow -Wformat-security -Wstrict-prototypes -O2 -msse2
 
 DEFS = -DBUILD_ID=\"$(BUILD_ID)\" \
  -DVERSION=\"$(VERSION)\" -DGIT_VER=\"$(GIT_VER)\"

@@ -713,9 +713,9 @@ static void parse_options(struct ts *ts, int argc, char **argv) {
 				ts_get_CA_sys_txt(ts->req_CA_sys),
 				ts->forced_caid, ts->forced_caid);
 	} else {
-		char cw_even[64], cw_odd[64];
-		ts_hex_dump_buf(cw_even, sizeof(cw_even), ts->key.cw    , 8, 0);
-		ts_hex_dump_buf(cw_odd , sizeof(cw_odd ), ts->key.cw + 8, 8, 0);
+		char cw_even[128], cw_odd[128];
+		ts_hex_dump_buf(cw_even, sizeof(cw_even), ts->key.cw    , 16, 0);
+		ts_hex_dump_buf(cw_odd , sizeof(cw_odd ), ts->key.cw + 16, 16, 0);
 		ts_LOGf("Constant CW: even = %s\n", cw_even);
 		ts_LOGf("Constant CW: odd  = %s\n", cw_odd);
 	}
