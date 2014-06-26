@@ -18,7 +18,7 @@ endif
 
 CFLAGS ?= -ggdb \
  -W -Wall -Wextra \
- -Wshadow -Wformat-security -Wstrict-prototypes -O2 -msse2
+ -Wshadow -Wformat-security -Wstrict-prototypes -O3 -msse2
 
 DEFS = -DBUILD_ID=\"$(BUILD_ID)\" \
  -DVERSION=\"$(VERSION)\" -DGIT_VER=\"$(GIT_VER)\"
@@ -70,14 +70,9 @@ CLEAN_OBJS = $(FFDECSA_OBJ) tsdecrypt $(tsdecrypt_SRC:.c=.o) $(tsdecrypt_SRC:.c=
 
 PROGS = tsdecrypt
 
-.PHONY: ffdecsa dvbcsa help distclean clean install uninstall libaesdec
+.PHONY: help distclean clean install uninstall libaesdec
 
 all: $(PROGS)
-
-libaesdec: clean
-	$(Q)echo "Switching build to libaesdec."
-	@-if test -f FFdecsa.opts; then $(MV) FFdecsa.opts FFdecsa.opts.saved; fi	
-	$(Q)$(MAKE) -s tsdecrypt
 
 $(FUNCS_LIB): $(FUNCS_DIR)/libfuncs.h
 	$(Q)echo "  MAKE	$(FUNCS_LIB)"
