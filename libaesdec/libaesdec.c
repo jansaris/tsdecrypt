@@ -18,7 +18,6 @@
 #define NULL 0
 #endif
 
-//#define DEBUG
 #ifdef DEBUG
 #define DBG(a) a
 #else
@@ -31,8 +30,8 @@
  };*/
 
 struct aes_keys_t {
-	AES_KEY even; // table 0x80
-	AES_KEY odd; // table 0x81
+	AES_KEY even;
+	AES_KEY odd;
 };
 
 /*static void aes_schedule_key(struct aes_key_t *key, const unsigned char *pk) {
@@ -80,12 +79,7 @@ void free_key_struct(void *keys) {
 //----- decrypt
 
 void aes_decrypt_packet(void *keys, unsigned char *packet) {
-	//int stat_no_scramble = 0;
-	//int stat_reserved = 0;
-	//int group_ev_od = 0;
-	//int advanced = 0;
-	//int can_advance = 0;
-	char ev_od = 0;
+	unsigned char ev_od = 0;
 	unsigned char *pkt;
 	int xc0, len, offset, n;
 
@@ -94,23 +88,16 @@ void aes_decrypt_packet(void *keys, unsigned char *packet) {
 
 	// TODO check all flags
 		xc0 = pkt[3] & 0xc0;
-		DBG(fprintf(stderr,"   exam pkt=%p, xc0=%02x\n",pkt,xc0));
 
-		if (xc0 == 0x00) {
-			DBG(fprintf(stderr,"skip clear pkt %p\n",pkt));
-			//advanced += can_advance;
-			//stat_no_scramble++;
+		if (xc0 == 0x00) {//skip clear pkt
 			return;
 		}
-		if (xc0 == 0x40) {
-			DBG(fprintf(stderr,"skip reserved pkt %p\n",pkt));
-			//advanced += can_advance;
-			//stat_reserved++;
+		if (xc0 == 0x40) { //skip reserved pkt
 			return;
 		}
 	
 	if (xc0 == 0x80 || xc0 == 0xc0) { // encrypted 
-		ev_od = (xc0 & 0x40) >> 6; // 0 even, 1 odd   TODO Find our key flag
+		ev_od = (xc0 & 0x40) >> 6; // 0 even, 1 odd   TODO Check flag
 		pkt[3] &= 0x3f;  // consider it decrypted now
 		if (pkt[3] & 0x20) { // incomplete packet
 				offset = 4 + pkt[4] + 1;
@@ -118,11 +105,10 @@ void aes_decrypt_packet(void *keys, unsigned char *packet) {
 				n = len >> 3;
 				//residue = len - (n << 3);
 				if (n == 0) { // decrypted==encrypted!
-					DBG(fprintf(stderr,"DECRYPTED MINI!\n"));
+					//DBG(fprintf(stderr,"DECRYPTED MINI!\n"));
 					return;  // this doesn't need more processing
 				}
-                //DBG(fprintf(stderr,"skip pkt %p, incomplete\n",pkt));
-                //return; // skip and go on
+                return; // TODO Handle incomplete packets?
 		}
 	}
 	else {
@@ -135,9 +121,6 @@ void aes_decrypt_packet(void *keys, unsigned char *packet) {
 	} else {
 		k = ((struct aes_keys_t *) keys)->odd;
 	}
-
-
-	//AES_cbc_encrypt(pkt + 4, pkt + 4, 176, &k, iv,AES_DECRYPT); 
 
 	// TODO room for improvement?
 	int i;

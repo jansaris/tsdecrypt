@@ -1,3 +1,7 @@
+tsdecrypt AES branch
+=========
+tsdecrypt AES is a modified version of tsdecrypt which uses DVB-AES instead of DVB-CSA.
+
 tsdecrypt
 =========
 tsdecrypt reads incoming mpeg transport stream over UDP/RTP and then
