@@ -109,12 +109,9 @@ void aes_decrypt_packet(void *keys, unsigned char *packet) {
 			return;
 		}
 	
-	if (xc0 == 0x80 || xc0 == 0xc0) { // encrypted
-	//	if(xc0 == 0x80) {
+	if (xc0 == 0x80 || xc0 == 0xc0) { // encrypted 
 		ev_od = (xc0 & 0x40) >> 6; // 0 even, 1 odd   TODO Find our key flag
-
 		pkt[3] &= 0x3f;  // consider it decrypted now
-		//return;			// test no decrypt
 		if (pkt[3] & 0x20) { // incomplete packet
 				offset = 4 + pkt[4] + 1;
 				len = 188 - offset;
@@ -124,13 +121,16 @@ void aes_decrypt_packet(void *keys, unsigned char *packet) {
 					DBG(fprintf(stderr,"DECRYPTED MINI!\n"));
 					return;  // this doesn't need more processing
 				}
-                                DBG(fprintf(stderr,"skip pkt %p, incomplete\n",pkt));
-                                return; // skip and go on
+                //DBG(fprintf(stderr,"skip pkt %p, incomplete\n",pkt));
+                //return; // skip and go on
 		}
+	}
+	else {
+		return;
 	}
 
 	//choose key TODO Check this
-	if (ev_od) {
+	if (ev_od == 0) {
 		k = ((struct aes_keys_t *) keys)->even;
 	} else {
 		k = ((struct aes_keys_t *) keys)->odd;
