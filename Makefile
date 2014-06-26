@@ -50,8 +50,8 @@ tsdecrypt_SRC = data.c \
  tables.c \
  notify.c \
  tsdecrypt.c \
-libaesdec/libaesdec.c
-tsdecrypt_LIBS = -lcrypto -lpthread
+ libaesdec/libaesdec.c
+ tsdecrypt_LIBS = -lcrypto -lpthread
 
 
 tsdecrypt_OBJS = $(FFDECSA_OBJ) $(FUNCS_LIB) $(TS_LIB) $(tsdecrypt_SRC:.c=.o)
@@ -79,21 +79,6 @@ libaesdec: clean
 	@-if test -f FFdecsa.opts; then $(MV) FFdecsa.opts FFdecsa.opts.saved; fi	
 	$(Q)$(MAKE) -s tsdecrypt
 
-ffdecsa: clean
-	$(Q)echo "Switching build to FFdecsa."
-	@-if test -e FFdecsa.opts.saved; then $(MV) FFdecsa.opts.saved FFdecsa.opts; fi
-	@-if ! test -e FFdecsa.opts; then ./FFdecsa_init "$(CROSS)" "$(CC)"; fi
-	$(Q)$(MAKE) -s tsdecrypt
-
-ffdecsa_force:
-	$(Q)$(RM) FFdecsa.opts
-	$(Q)$(MAKE) -s ffdecsa
-
-dvbcsa: clean
-	$(Q)echo "Switching build to libdvbcsa."
-	@-if test -f FFdecsa.opts; then $(MV) FFdecsa.opts FFdecsa.opts.saved; fi
-	$(Q)$(MAKE) -s tsdecrypt
-
 $(FUNCS_LIB): $(FUNCS_DIR)/libfuncs.h
 	$(Q)echo "  MAKE	$(FUNCS_LIB)"
 	$(Q)$(MAKE) -s -C $(FUNCS_DIR)
@@ -111,14 +96,9 @@ tsdecrypt: $(tsdecrypt_OBJS)
 	$(Q)echo "  CC	tsdecrypt	$<"
 	$(Q)$(CROSS)$(CC) $(CFLAGS) $(DEFS) -c $<
 
-FFdecsa/FFdecsa.o:
-	$(Q)echo "  MAKE	FFdecsa"
-	$(Q)$(MAKE) -s -C FFdecsa FLAGS=$(FFDECSA_FLAGS) PARALLEL_MODE=$(FFDECSA_MODE) COMPILER=$(CROSS)$(CC) FFdecsa.o
-
 libaesdec/libaesdec.o:
 	$(Q)echo "  MAKE	libaesdec"
 	$(Q)$(MAKE) -s -C libaesdec COMPILER=$(CROSS)$(CC) libaesdec.o
-
 
 -include $(tsdecrypt_SRC:.c=.d)
 
@@ -157,10 +137,8 @@ help:
 	$(Q)echo -e "\
 tsdecrypt $(VERSION) ($(GIT_VER)) build\n\n\
 Build targets:\n\
-  tsdecrypt|all   - Build tsdecrypt with whatever decryption library was chosen\n\
+  tsdecrypt|all   - Build tsdecrypt with libaesdec.\n\
 \n\
-  dvbcsa          - Build tsdecrypt with libdvbcsa [default]\n\
-  ffdecsa         - Build tsdecrypt with shipped FFdecsa\n\
   libaesdec       - Build tsdecrypt with libaesdec.\n\
 \n\
   install         - Install tsdecrypt in PREFIX ($(PREFIX))\n\

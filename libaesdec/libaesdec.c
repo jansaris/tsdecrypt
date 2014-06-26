@@ -9,7 +9,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "openssl/aes.h"
 
@@ -80,75 +79,57 @@ void free_key_struct(void *keys) {
 
 //----- decrypt
 
-int aes_decrypt_packet(void *keys, unsigned char *packet) {
-	int stat_no_scramble = 0;
-	int stat_reserved = 0;
+void aes_decrypt_packet(void *keys, unsigned char *packet) {
+	//int stat_no_scramble = 0;
+	//int stat_reserved = 0;
 	//int group_ev_od = 0;
-	int advanced = 0;
-	int can_advance = 0;
-int ev_od;
+	//int advanced = 0;
+	//int can_advance = 0;
+	char ev_od = 0;
 	unsigned char *pkt;
 	int xc0, len, offset, n;
 
 	pkt = packet;
 	AES_KEY k;
 
-
 	// TODO check all flags
-
-	do { // handle this packet
 		xc0 = pkt[3] & 0xc0;
-		DBG(fprintf(stderr,"   exam pkt=%p, xc0=%02x, can_adv=%i\n",pkt,xc0,can_advance));
+		DBG(fprintf(stderr,"   exam pkt=%p, xc0=%02x\n",pkt,xc0));
+
 		if (xc0 == 0x00) {
-			DBG(fprintf(stderr,"skip clear pkt %p (can_advance is %i)\n",pkt,can_advance));
-			advanced += can_advance;
-			stat_no_scramble++;
-			return advanced;
+			DBG(fprintf(stderr,"skip clear pkt %p\n",pkt));
+			//advanced += can_advance;
+			//stat_no_scramble++;
+			return;
 		}
 		if (xc0 == 0x40) {
-			DBG(fprintf(stderr,"skip reserved pkt %p (can_advance is %i)\n",pkt,can_advance));
-			advanced += can_advance;
-			stat_reserved++;
-			return advanced;
+			DBG(fprintf(stderr,"skip reserved pkt %p\n",pkt));
+			//advanced += can_advance;
+			//stat_reserved++;
+			return;
 		}
-		if (xc0 == 0x80 || xc0 == 0xc0) { // encrypted
+	
+	if (xc0 == 0x80 || xc0 == 0xc0) { // encrypted
+	//	if(xc0 == 0x80) {
 		ev_od = (xc0 & 0x40) >> 6; // 0 even, 1 odd   TODO Find our key flag
 
-			pkt[3] &= 0x3f;  // consider it decrypted now
-			if (pkt[3] & 0x20) { // incomplete packet
+		pkt[3] &= 0x3f;  // consider it decrypted now
+		//return;			// test no decrypt
+		if (pkt[3] & 0x20) { // incomplete packet
 				offset = 4 + pkt[4] + 1;
 				len = 188 - offset;
 				n = len >> 3;
 				//residue = len - (n << 3);
 				if (n == 0) { // decrypted==encrypted!
-					DBG(fprintf(stderr,"DECRYPTED MINI! (can_advance is %i)\n",can_advance));
-					advanced += can_advance;
-					return advanced;  // this doesn't need more processing
+					DBG(fprintf(stderr,"DECRYPTED MINI!\n"));
+					return;  // this doesn't need more processing
 				}
-				//return 0;
-			} else {
-				can_advance = 0;
-				DBG(fprintf(stderr,"skip pkt %p and can_advance set to 0\n",pkt));
-				//return advanced; // skip and go on
-			}
+                                DBG(fprintf(stderr,"skip pkt %p, incomplete\n",pkt));
+                                return; // skip and go on
 		}
-	} while (0);
+	}
 
-	//INIT
-//#define INITIALIZE_UNUSED_INPUT
-#ifdef INITIALIZE_UNUSED_INPUT
-// unnecessary zeroing.
-// without this, we operate on uninitialized memory
-// when grouped<GROUP_PARALLELISM, but it's not a problem,
-// as final results will be discarded.
-// random data makes debugging sessions difficult.
-	for(j=0;j<GROUP_PARALLELISM*8;j++) stream_in[j]=0;
-	DBG(fprintf(stderr,"--- WARNING: you could gain speed by not initializing unused memory ---\n"));
-#else
-	DBG(fprintf(stderr,"--- WARNING: DEBUGGING IS MORE DIFFICULT WHEN PROCESSING RANDOM DATA CHANGING AT EVERY RUN! ---\n"));
-#endif
-
-	// choose key
+	//choose key TODO Check this
 	if (ev_od) {
 		k = ((struct aes_keys_t *) keys)->even;
 	} else {
@@ -156,11 +137,11 @@ int ev_od;
 	}
 
 
-//AES_cbc_encrypt(pkt + 12, pkt + 12, 172, &k, iv,AES_DECRYPT);
+	//AES_cbc_encrypt(pkt + 4, pkt + 4, 176, &k, iv,AES_DECRYPT); 
+
+	// TODO room for improvement?
 	int i;
-	for (i = 4; i <= 172; i += 16) {
+	for (i = 4; i <= 164; i += 16) {
 		AES_ecb_encrypt(pkt + i, pkt + i, &k, AES_DECRYPT);
 	}
-
-	return advanced;
 }

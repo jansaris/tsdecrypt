@@ -11,7 +11,8 @@
 #FLAGS += -pg
 
 COMPILER ?= g++
-FLAGS    ?= -Wall -fPIC -fomit-frame-pointer -fexpensive-optimizations -funroll-loops -O3
+FLAGS    ?= -Wall -fPIC -Wunused-result -fomit-frame-pointer -fexpensive-optimizations -funroll-loops -O2
+
 
 H_FILES = libaesdec.h
 

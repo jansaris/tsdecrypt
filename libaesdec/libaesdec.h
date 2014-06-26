@@ -26,7 +26,7 @@ void aes_set_odd_control_word(void *keys, const unsigned char *odd);
 //void get_control_words(void *keys, unsigned char *even, unsigned char *odd);
 
 // -- decrypt TS packet
-int aes_decrypt_packet(void *keys, unsigned char *packet);
+void aes_decrypt_packet(void *keys, unsigned char *packet);
 
 
 #endif /* LIBAESDEC_H_ */
