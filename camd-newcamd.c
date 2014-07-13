@@ -403,7 +403,7 @@ static int newcamd_get_cw(struct camd *c, uint16_t *ca_id, uint16_t *idx, uint8_
 		}
 	}
 
-	if (ret != 19) {
+	if (ret < 19) {
 		if (ret == 3) {
 			ts_LOGf("ERR | [%s] Card was not able to decode the channel.\n", c->ops.ident);
 			return 0;
@@ -415,7 +415,7 @@ static int newcamd_get_cw(struct camd *c, uint16_t *ca_id, uint16_t *idx, uint8_
 
 	*ca_id = c->newcamd.caid;
 	*idx   = 0; // FIXME
-	memcpy(cw, c->newcamd.buf + 3, 16);
+	memcpy(cw, c->newcamd.buf + 3, ret - 3);
 	return 1;
 }
 
